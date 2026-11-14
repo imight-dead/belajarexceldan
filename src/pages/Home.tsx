@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { LEVELS } from '../content/levels'
 import { href } from '../lib/router'
-import { weakTopics } from '../lib/report'
-import { PASS, isUnlocked, useStore } from '../lib/store'
-import { Callout, Card, Chip, Icon, Progress, cx } from '../components/ui'
+import { useStore } from '../lib/store'
+import { Callout, Card, Chip, Progress } from '../components/ui'
 
 export const TEST_DATE = new Date(2026, 10, 14, 7, 0, 0)
 
@@ -36,9 +35,10 @@ export function Countdown() {
 
 export function Home() {
   const s = useStore((x) => x)
-  const next = LEVELS.find((l) => isUnlocked(s, l.n) && (s.quiz[l.n]?.best ?? 0) < PASS) ?? LEVELS[0]
-  const recent = [...s.history].reverse().slice(0, 8)
-  const weak = weakTopics(s)
+  const next =
+    LEVELS.find((l) => l.concepts.some((c) => !s.read[`${l.n}:${c.id}`])) ??
+    LEVELS[0]
+  const hasReadAny = Object.values(s.read).some(Boolean)
 
   return (
     <div className="space-y-8">
@@ -51,7 +51,7 @@ export function Home() {
           <Countdown />
           <div className="mt-6 flex flex-wrap gap-2">
             <a href={href('level', next.n)} className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-ink hover:opacity-90">
-              {s.history.length ? 'Lanjutkan' : 'Mulai'}: Level {next.n} {next.title}
+              {hasReadAny ? 'Lanjutkan' : 'Mulai'}: Level {next.n} {next.title}
             </a>
             <a href={href('rencana')} className="inline-flex items-center rounded-md border border-line bg-surface px-4 py-2 text-sm font-semibold hover:bg-sunken">
               Lihat rencana
@@ -66,34 +66,29 @@ export function Home() {
       </Callout>
 
       <section>
-        <h2 className="mb-3 text-lg font-bold">Peta level</h2>
+        <h2 className="mb-3 text-lg font-bold">Peta level materi</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {LEVELS.map((l) => {
-            const open = isUnlocked(s, l.n)
-            const best = s.quiz[l.n]?.best
-            const done = l.questions.filter((q) => s.excel[q.id]?.status === 'benar').length
-            const pct = l.questions.length ? (done / l.questions.length) * 100 : 0
+            const done = l.concepts.filter((c) => s.read[`${l.n}:${c.id}`]).length
+            const total = l.concepts.length
+            const pct = total ? (done / total) * 100 : 0
             return (
-              <a key={l.n} href={href('level', l.n)} className={cx('group block', !open && 'opacity-60')}>
+              <a key={l.n} href={href('level', l.n)} className="group block">
                 <Card className="h-full p-4 transition-colors group-hover:border-muted">
                   <div className="flex items-start gap-3">
                     <span className="mono flex size-9 shrink-0 items-center justify-center rounded-md bg-sunken text-sm font-bold">L{l.n}</span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-bold">{l.title}</span>
-                        {!open && <Icon name="lock" className="size-3.5 text-muted" />}
                       </div>
                       <div className="text-sm text-muted">{l.short}</div>
                       <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs">
                         <Chip>{l.day}</Chip>
-                        <Chip tone={best !== undefined && best >= PASS ? 'ok' : 'plain'}>Kuis {best !== undefined ? `${best}%` : 'belum'}</Chip>
-                        {l.questions.length > 0 && (
-                          <Chip>
-                            Excel {done}/{l.questions.length}
-                          </Chip>
-                        )}
+                        <Chip tone={done === total && total > 0 ? 'ok' : 'plain'}>
+                          Materi {done}/{total}
+                        </Chip>
                       </div>
-                      {l.questions.length > 0 && <Progress value={pct} className="mt-2.5" />}
+                      {total > 0 && <Progress value={pct} className="mt-2.5" />}
                     </div>
                   </div>
                 </Card>
@@ -101,66 +96,6 @@ export function Home() {
             )
           })}
         </div>
-        <p className="mt-3 text-sm text-muted">
-          Level terbuka berurutan setelah kuis level sebelumnya minimal {PASS}%. Untuk review bebas, aktifkan <b>Buka semua level</b> di menu.
-        </p>
-      </section>
-
-      {weak.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-lg font-bold">Bab yang masih lemah</h2>
-          <Card>
-            <ul className="divide-y divide-line text-sm">
-              {weak.slice(0, 5).map((t) => (
-                <li key={t.level + t.topic} className="flex items-center gap-3 px-4 py-2.5">
-                  <span className="text-muted">L{t.level}</span>
-                  <span className="flex-1 font-semibold">{t.topic}</span>
-                  <span className="mono text-bad">{t.pct}%</span>
-                  <a href={href('level', t.level, 'latihan', t.todo[0])} className="text-xs font-semibold text-accent hover:underline">
-                    ulang
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </Card>
-          <a href={href('rapor')} className="mt-2 inline-block text-sm font-semibold text-accent hover:underline">
-            Lihat rapor lengkap
-          </a>
-        </section>
-      )}
-
-      <section>
-        <h2 className="mb-3 text-lg font-bold">Riwayat skor</h2>
-        {recent.length ? (
-          <Card className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs text-muted uppercase">
-                <tr>
-                  <th className="px-4 py-2 font-semibold">Waktu</th>
-                  <th className="px-4 py-2 font-semibold">Level</th>
-                  <th className="px-4 py-2 font-semibold">Jenis</th>
-                  <th className="px-4 py-2 text-right font-semibold">Skor</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recent.map((h, i) => (
-                  <tr key={i} className="border-t border-line">
-                    <td className="px-4 py-2 whitespace-nowrap text-muted">
-                      {new Date(h.at).toLocaleString('id-ID', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="px-4 py-2">L{h.level}</td>
-                    <td className="px-4 py-2">{h.kind === 'kuis' ? 'Kuis' : h.level === 5 ? 'Pemeriksa Word' : h.kind === 'excel' ? 'Workbook' : 'Tempel manual'}</td>
-                    <td className="mono px-4 py-2 text-right">
-                      {h.score}/{h.total}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
-        ) : (
-          <p className="text-sm text-muted">Belum ada. Skor kuis dan hasil unggahan workbook akan muncul di sini.</p>
-        )}
       </section>
     </div>
   )

@@ -20,11 +20,7 @@ const DAYS: Day[] = [
     tasks: [
       { id: 'sen-1', text: 'Cek versi Excel (harus 365 / 2024 / web) dan pemisah argumen', link: href('level', 0) },
       { id: 'sen-2', text: 'Baca materi Level 0, coba semua contoh di Excel', link: href('level', 0) },
-      { id: 'sen-3', text: 'Kerjakan workbook Level 0, unggah, perbaiki yang salah', link: href('level', 0, 'latihan') },
-      { id: 'sen-4', text: 'Kuis Level 0 minimal 80%', link: href('level', 0, 'kuis') },
       { id: 'sen-5', text: 'Materi Level 1 + main visualisator lookup', link: href('level', 1) },
-      { id: 'sen-6', text: 'Workbook Level 1 (target 18/22 benar)', link: href('level', 1, 'latihan') },
-      { id: 'sen-7', text: 'Kuis Level 1 minimal 80%', link: href('level', 1, 'kuis') },
     ],
   },
   {
@@ -33,11 +29,8 @@ const DAYS: Day[] = [
     title: 'Selasa',
     focus: 'Level 2 dan 3: referensi dinamis dan array',
     tasks: [
-      { id: 'sel-0', text: 'Ulang soal salah dari hari Senin', link: href('ulang') },
       { id: 'sel-1', text: 'Level 2: OFFSET, ADDRESS, INDIRECT, dropdown bertingkat', link: href('level', 2) },
-      { id: 'sel-2', text: 'Workbook + kuis Level 2, main peraga OFFSET', link: href('level', 2, 'latihan') },
       { id: 'sel-3', text: 'Level 3: spill, FILTER, SORT, UNIQUE, VSTACK, CHOOSECOLS', link: href('level', 3) },
-      { id: 'sel-4', text: 'Workbook + kuis Level 3', link: href('level', 3, 'latihan') },
     ],
   },
   {
@@ -46,11 +39,8 @@ const DAYS: Day[] = [
     title: 'Rabu',
     focus: 'Level 4: LET, LAMBDA, MAP, BYROW, REDUCE, SCAN',
     tasks: [
-      { id: 'rab-0', text: 'Ulang soal salah', link: href('ulang') },
       { id: 'rab-1', text: 'LET dan LAMBDA, simpan fungsi di Name Manager', link: href('level', 4) },
       { id: 'rab-2', text: 'MAP, BYROW/BYCOL, REDUCE, SCAN dengan visualisator', link: href('level', 4) },
-      { id: 'rab-3', text: 'Workbook Level 4 (paling berat, sisihkan waktu lebih)', link: href('level', 4, 'latihan') },
-      { id: 'rab-4', text: 'Kuis Level 4', link: href('level', 4, 'kuis') },
     ],
   },
   {
@@ -60,22 +50,15 @@ const DAYS: Day[] = [
     focus: 'Level 5: MS Word, PDF ke dokumen terstruktur',
     tasks: [
       { id: 'kam-1', text: 'Materi Styles, heading, multilevel list, section break', link: href('level', 5) },
-      { id: 'kam-2', text: 'Kerjakan minimal 2 dari 4 PDF target, cek dengan pemeriksa .docx', link: href('level', 5, 'latihan') },
-      { id: 'kam-3', text: 'Kuis Level 5', link: href('level', 5, 'kuis') },
     ],
   },
   {
     id: 'jum',
     date: new Date(2026, 10, 13),
     title: 'Jumat',
-    focus: 'Level 6 Design + simulasi tes',
+    focus: 'Level 6 Design + review materi',
     tasks: [
       { id: 'jum-1', text: 'Materi prinsip desain, tipografi, warna, ukuran kanvas', link: href('level', 6) },
-      { id: 'jum-p', text: 'Latihan perbaiki desain jelek', link: href('level', 6, 'latihan', 'perbaiki') },
-      { id: 'jum-2', text: 'Kerjakan 2 brief desain dengan timer', link: href('level', 6, 'latihan') },
-      { id: 'jum-k', text: 'Kuis Level 6', link: href('level', 6, 'kuis') },
-      { id: 'jum-3', text: 'Simulasi tes penuh', link: href('simulasi') },
-      { id: 'jum-r', text: 'Cek rapor, ulang bab yang masih merah', link: href('rapor') },
       { id: 'jum-4', text: 'Baca ulang cheat sheet, tidur cukup', link: href('cheatsheet') },
     ],
   },

@@ -1,79 +1,33 @@
 import { levelByN } from '../content/levels'
 import type { Level } from '../content/types'
 import { href } from '../lib/router'
-import { PASS, isUnlocked, update, useStore } from '../lib/store'
+import { update, useStore } from '../lib/store'
 import { ConceptView } from '../components/ConceptView'
-import { ExcelPractice } from '../components/ExcelPractice'
-import { WordPractice } from '../components/WordPractice'
-import { DesignPractice } from '../components/DesignPractice'
-import { Quiz } from '../components/Quiz'
 import { Chip, Icon, cx } from '../components/ui'
 
-export function LevelPage({ n, tab = 'materi', focus }: { n: number; tab?: string; focus?: string }) {
+export function LevelPage({ n, focus }: { n: number; focus?: string }) {
   const level = levelByN(n)
-  const s = useStore((x) => x)
+  const read = useStore((x) => x.read)
   if (!level) return <p>Level tidak ditemukan.</p>
-  const open = isUnlocked(s, n)
-  const kind = level.practice ?? 'excel'
 
-  const tabs = [
-    { id: 'materi', label: 'Materi', count: level.concepts.length },
-    { id: 'latihan', label: kind === 'excel' ? 'Latihan Excel' : kind === 'word' ? 'Latihan Word' : 'Latihan desain', count: null },
-    { id: 'kuis', label: 'Kuis', count: level.quiz.length },
-  ]
+  const doneCount = level.concepts.filter((c) => read[`${level.n}:${c.id}`]).length
 
   return (
     <div>
-      <header className="mb-6">
+      <header className="mb-8 border-b border-line pb-5">
         <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-muted">
           <span className="font-semibold">Level {level.n}</span>
           <span>·</span>
           <span>{level.day}</span>
-          {s.quiz[n] && <Chip tone={s.quiz[n].best >= PASS ? 'ok' : 'plain'}>Kuis terbaik {s.quiz[n].best}%</Chip>}
+          <Chip tone={doneCount === level.concepts.length ? 'ok' : 'plain'}>
+            {doneCount}/{level.concepts.length} topik dibaca
+          </Chip>
         </div>
         <h1 className="text-3xl font-extrabold tracking-tight">{level.title}</h1>
         {level.goal && <p className="mt-2 max-w-2xl text-muted">{level.goal}</p>}
       </header>
 
-      {!open ? (
-        <div className="rounded-lg border border-line bg-surface p-6">
-          <div className="mb-2 flex items-center gap-2 font-bold">
-            <Icon name="lock" /> Terkunci
-          </div>
-          <p className="text-sm text-muted">
-            Selesaikan kuis Level {n - 1} dengan skor minimal {PASS}% untuk membuka level ini. Atau aktifkan <b>Buka semua level</b> di menu untuk mode review.
-          </p>
-          <a href={href('level', n - 1, 'kuis')} className="mt-3 inline-block text-sm font-semibold text-accent hover:underline">
-            Ke kuis Level {n - 1}
-          </a>
-        </div>
-      ) : (
-        <>
-          <nav className="no-print sticky top-[53px] z-10 -mx-4 mb-8 flex gap-1 overflow-x-auto overflow-y-hidden [scrollbar-width:none] border-b border-line bg-bg/95 px-4 backdrop-blur lg:top-0 lg:mx-0 lg:px-0" role="tablist">
-            {tabs.map((t) => (
-              <a
-                key={t.id}
-                href={href('level', n, t.id)}
-                role="tab"
-                aria-selected={tab === t.id}
-                className={cx(
-                  '-mb-px flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold whitespace-nowrap',
-                  tab === t.id ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-ink',
-                )}
-              >
-                {t.label}
-                {t.count !== null && <span className="rounded bg-sunken px-1.5 text-[11px] text-muted">{t.count}</span>}
-              </a>
-            ))}
-          </nav>
-
-          {tab === 'materi' && <Lessons level={level} focus={focus} />}
-          {tab === 'latihan' && kind === 'excel' && <ExcelPractice level={level} focus={focus} />}
-          {tab === 'latihan' && kind === 'word' && <WordPractice focus={focus} />}
-          {tab === 'latihan' && kind === 'design' && <DesignPractice focus={focus} />}
-          {tab === 'kuis' && <Quiz key={n} level={level} />}
-        </>
-      )}
+      <Lessons level={level} focus={focus} />
     </div>
   )
 }
@@ -88,14 +42,23 @@ function Lessons({ level, focus }: { level: Level; focus?: string }) {
   const doneCount = list.filter((x) => read[key(x.id)]).length
   const prev = list[idx - 1]
   const next = list[idx + 1]
+  const nextLevel = levelByN(level.n + 1)
+
   const go = (id: string) => {
     location.hash = href('level', level.n, 'materi', id)
     window.scrollTo({ top: 0 })
   }
   const markAndNext = () => {
     update((s) => ({ ...s, read: { ...s.read, [key(c.id)]: true } }))
-    if (next) go(next.id)
-    else location.hash = href('level', level.n, 'latihan')
+    if (next) {
+      go(next.id)
+    } else if (nextLevel) {
+      location.hash = href('level', nextLevel.n)
+      window.scrollTo({ top: 0 })
+    } else {
+      location.hash = href()
+      window.scrollTo({ top: 0 })
+    }
   }
 
   return (
@@ -148,7 +111,7 @@ function Lessons({ level, focus }: { level: Level; focus?: string }) {
         <div className="mb-3 text-sm text-muted">
           Topik {idx + 1} dari {list.length}
         </div>
-        <ConceptView key={c.id} c={c} level={level.n} />
+        <ConceptView key={c.id} c={c} />
 
         <div className="no-print mt-12 flex max-w-[68ch] flex-wrap items-center gap-3 border-t border-line pt-6">
           {prev ? (
@@ -159,7 +122,7 @@ function Lessons({ level, focus }: { level: Level; focus?: string }) {
             <span />
           )}
           <button onClick={markAndNext} className="ml-auto rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-ink hover:opacity-90">
-            {next ? 'Sudah paham, lanjut ›' : 'Sudah paham, ke latihan ›'}
+            {next ? 'Sudah paham, lanjut ›' : nextLevel ? `Lanjut ke Level ${nextLevel.n} ›` : 'Selesai semua materi ›'}
           </button>
         </div>
         {next && (

@@ -1,14 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { LEVELS } from './content/levels'
 import { href, useRoute } from './lib/router'
-import { PASS, isUnlocked, update, useStore } from './lib/store'
+import { useStore } from './lib/store'
 import { Home } from './pages/Home'
 import { LevelPage } from './pages/LevelPage'
 import { Plan } from './pages/Plan'
-import { Review } from './pages/Review'
-import { Simulasi } from './pages/Simulasi'
 import { Cheatsheet } from './pages/Cheatsheet'
-import { Rapor } from './pages/Rapor'
 import { Icon, cx } from './components/ui'
 
 export default function App() {
@@ -20,12 +17,9 @@ export default function App() {
   }, [route.join('/')]) // eslint-disable-line react-hooks/exhaustive-deps
 
   let page: ReactNode
-  if (route[0] === 'level') page = <LevelPage n={Number(route[1])} tab={route[2]} focus={route[3]} />
+  if (route[0] === 'level') page = <LevelPage n={Number(route[1])} focus={route[3] ?? route[2]} />
   else if (route[0] === 'rencana') page = <Plan />
-  else if (route[0] === 'ulang') page = <Review />
   else if (route[0] === 'cheatsheet') page = <Cheatsheet />
-  else if (route[0] === 'simulasi') page = <Simulasi />
-  else if (route[0] === 'rapor') page = <Rapor />
   else page = <Home />
 
   return (
@@ -72,7 +66,6 @@ function Brand() {
 
 function Nav({ route }: { route: string[] }) {
   const s = useStore((x) => x)
-  const due = Object.values(s.review).filter((r) => r.due <= Date.now()).length
   const at = route.join('/')
   const item = (to: string, label: ReactNode, active: boolean, extra?: ReactNode) => (
     <a href={to} className={cx('flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm', active ? 'bg-ink font-semibold text-bg' : 'hover:bg-sunken')}>
@@ -85,28 +78,28 @@ function Nav({ route }: { route: string[] }) {
       <div className="space-y-0.5">
         {item('#/', 'Beranda', at === '')}
         {item(href('rencana'), 'Rencana 5 hari', at === 'rencana')}
-        {item(href('ulang'), 'Ulang soal salah', at === 'ulang', due ? <span className="rounded bg-bad px-1.5 text-[11px] font-bold text-white">{due}</span> : null)}
-        {item(href('rapor'), 'Rapor belajar', at === 'rapor')}
       </div>
       <div>
-        <div className="mb-1.5 px-2.5 text-[11px] font-bold tracking-wider text-muted uppercase">Level</div>
+        <div className="mb-1.5 px-2.5 text-[11px] font-bold tracking-wider text-muted uppercase">Level Materi</div>
         <div className="space-y-0.5">
           {LEVELS.map((l) => {
-            const open = isUnlocked(s, l.n)
-            const best = s.quiz[l.n]?.best
+            const doneTopics = l.concepts.filter((c) => s.read[`${l.n}:${c.id}`]).length
+            const allRead = l.concepts.length > 0 && doneTopics === l.concepts.length
             return (
               <a
                 key={l.n}
                 href={href('level', l.n)}
-                className={cx('flex items-center gap-2.5 rounded-md px-2.5 py-1.5', route[0] === 'level' && Number(route[1]) === l.n ? 'bg-ink text-bg' : 'hover:bg-sunken', !open && 'opacity-55')}
+                className={cx('flex items-center gap-2.5 rounded-md px-2.5 py-1.5', route[0] === 'level' && Number(route[1]) === l.n ? 'bg-ink text-bg' : 'hover:bg-sunken')}
               >
                 <span className="mono w-4 text-xs">{l.n}</span>
                 <span className="flex-1 truncate">{l.title}</span>
-                {best !== undefined && best >= PASS ? (
+                {allRead ? (
                   <Icon name="check" className="size-3.5 text-ok" />
-                ) : !open ? (
-                  <Icon name="lock" className="size-3.5" />
-                ) : null}
+                ) : (
+                  <span className="mono text-[11px] opacity-60">
+                    {doneTopics}/{l.concepts.length}
+                  </span>
+                )}
               </a>
             )
           })}
@@ -114,16 +107,8 @@ function Nav({ route }: { route: string[] }) {
       </div>
       <div className="space-y-0.5">
         {item(href('cheatsheet'), 'Cheat sheet', at === 'cheatsheet')}
-        {item(href('simulasi'), 'Simulasi tes', at === 'simulasi')}
       </div>
       <div className="space-y-3 border-t border-line pt-4">
-        <label className="flex items-center justify-between gap-2 px-2.5">
-          <span>
-            Buka semua level
-            <span className="block text-[11px] text-muted">mode review</span>
-          </span>
-          <input type="checkbox" checked={s.unlockAll} onChange={(e) => update((x) => ({ ...x, unlockAll: e.target.checked }))} className="size-4 accent-[var(--accent)]" />
-        </label>
         <ThemeToggle />
       </div>
     </nav>

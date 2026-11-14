@@ -33,7 +33,7 @@ export interface State {
   unlockAll: boolean
 }
 
-const empty: State = { quiz: {}, excel: {}, revealed: {}, history: [], review: {}, plan: {}, read: {}, word: {}, design: {}, sim: [], unlockAll: false }
+const empty: State = { quiz: {}, excel: {}, revealed: {}, history: [], review: {}, plan: {}, read: {}, word: {}, design: {}, sim: [], unlockAll: true }
 
 function load(): State {
   try {
@@ -74,9 +74,8 @@ export function useStore<T>(sel: (s: State) => T): T {
 
 export const getState = () => state
 
-export function isUnlocked(s: State, n: number): boolean {
-  if (s.unlockAll || n === 0) return true
-  return (s.quiz[n - 1]?.best ?? 0) >= PASS
+export function isUnlocked(_s: State, _n: number): boolean {
+  return true
 }
 
 // ---------- spaced repetition sederhana (sistem kotak Leitner) ----------

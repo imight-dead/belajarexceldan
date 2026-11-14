@@ -7,13 +7,12 @@ import { LookupVisual } from './visual/LookupVisual'
 import { OffsetVisual } from './visual/OffsetVisual'
 import { SpillVisual } from './visual/SpillVisual'
 import { ReduceVisual } from './visual/ReduceVisual'
-import { href } from '../lib/router'
 import { cx } from './ui'
 
 const VISUAL = { lookup: LookupVisual, offset: OffsetVisual, spill: SpillVisual, reduce: ReduceVisual }
 
 /** Satu topik materi. Dibuat untuk dibaca pelan: kolom sempit, satu ide per blok, detail dilipat. */
-export function ConceptView({ c, level }: { c: Concept; level: number }) {
+export function ConceptView({ c }: { c: Concept }) {
   const V = c.visual ? VISUAL[c.visual] : null
   const [first, ...more] = c.examples ?? []
   return (
@@ -137,17 +136,6 @@ export function ConceptView({ c, level }: { c: Concept; level: number }) {
               </ul>
             </Fold>
           )}
-        </div>
-      )}
-
-      {c.practice && (
-        <div className="mt-8 rounded-lg border border-line bg-surface px-4 py-3 text-sm">
-          <span className="mr-2 font-semibold">Langsung latihan:</span>
-          {c.practice.map((id) => (
-            <a key={id} href={href('level', level, 'latihan', id)} className="mono mr-1.5 mb-1 inline-block rounded bg-sunken px-2 py-0.5 text-xs font-semibold hover:bg-accent hover:text-accent-ink">
-              {id}
-            </a>
-          ))}
         </div>
       )}
     </article>
