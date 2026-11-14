@@ -1,0 +1,40 @@
+{
+  "name": "lembar-kerja-aslab",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "data": "node scripts/build-data.mjs",
+    "verify:export": "tsx scripts/verify/export.ts",
+    "verify:excel": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify/excel.ps1",
+    "verify:check": "tsx scripts/verify/check.ts",
+    "verify": "npm run verify:export && npm run verify:excel && npm run verify:check && npm run verify:word",
+    "verify:word": "tsx scripts/word/build.ts && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/word/word.ps1 && tsx scripts/word/check.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@xmldom/xmldom": "^0.9.12",
+    "exceljs": "^4.4.0",
+    "jszip": "^3.10.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "docx": "^9.15.3",
+    "oxlint": "^1.90.0",
+    "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.6"
+  }
+}
